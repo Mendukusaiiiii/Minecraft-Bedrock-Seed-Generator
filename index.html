@@ -15,16 +15,21 @@
       height: 100vh;
       margin: 0;
       text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     #terminal {
       background-color: #000;
       border: 2px solid #00ff00;
       padding: 20px;
-      width: 700px;
+      width: 90%;
+      max-width: 700px;
       box-shadow: 0 0 15px #00ff00;
       text-align: center;
       white-space: pre-line;
+      box-sizing: border-box;
+      border-radius: 10px;
     }
 
     input, button {
@@ -38,26 +43,26 @@
     }
 
     #count {
-      width: 40px;
+      width: 60px;
       min-width: 40px;
       border: 1px solid #00ff00;
       box-shadow: 0 0 8px #00ff00 inset, 0 0 5px #00ff00;
-      border-radius: 0;
-      padding: 2px 4px;
+      border-radius: 4px;
+      padding: 5px;
+      margin-top: 8px;
       transition: width 0.1s ease, box-shadow 0.2s;
-      margin-top: 5px;
     }
 
     #count:focus {
       box-shadow: 0 0 12px #00ff00, inset 0 0 8px #00ff00;
     }
 
-    
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
+
     input[type=number] {
       -moz-appearance: textfield;
     }
@@ -65,11 +70,12 @@
     button {
       cursor: pointer;
       border: 1px solid #00ff00;
-      padding: 3px 12px;
+      padding: 6px 16px;
       transition: background 0.2s, color 0.2s, box-shadow 0.2s;
       box-shadow: 0 0 5px #00ff00;
       display: block;
-      margin: 10px auto 0 auto;
+      margin: 12px auto 0 auto;
+      border-radius: 4px;
     }
 
     button:hover {
@@ -81,11 +87,11 @@
     #outputBox {
       border: 1px solid #00ff00;
       padding: 10px;
-      margin-top: 0px;
+      margin-top: 10px;
       text-align: left;
       height: 250px;
       overflow-y: auto;
-      white-space: pre;
+      white-space: pre-wrap;
       background-color: #000;
       box-shadow: inset 0 0 10px #00ff00;
       display: flex;
@@ -94,11 +100,11 @@
       align-items: flex-start;
       scrollbar-width: thin;
       scrollbar-color: #00ff00 #000;
+      font-size: 0.9em;
     }
 
-   
     #outputBox::-webkit-scrollbar {
-      width: 10px;
+      width: 8px;
     }
 
     #outputBox::-webkit-scrollbar-track {
@@ -124,6 +130,7 @@
       margin-bottom: 8px;
       text-align: left;
       width: 100%;
+      word-wrap: break-word;
     }
 
     #error {
@@ -132,6 +139,7 @@
       margin-top: 5px;
       display: none;
       text-shadow: 0 0 8px #ff0000;
+      font-size: 0.9em;
     }
 
     #seedContainer {
@@ -139,6 +147,8 @@
       padding: 0;
       text-align: left;
       white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 100%;
     }
 
     .spinner {
@@ -159,8 +169,43 @@
       100% { content: "|"; }
     }
 
-    h1, p {
-      display: none;
+    @media (max-width: 600px) {
+      body {
+        padding: 5px;
+      }
+
+      #terminal {
+        width: 100%;
+        padding: 15px;
+        font-size: 0.9em;
+      }
+
+      #outputBox {
+        height: 200px;
+        font-size: 0.8em;
+      }
+
+      button {
+        padding: 5px 12px;
+        font-size: 0.9em;
+      }
+
+      #count {
+        width: 50px;
+        font-size: 0.9em;
+      }
+    }
+
+    @media (max-width: 400px) {
+      #terminal {
+        font-size: 0.8em;
+      }
+      #outputBox {
+        height: 180px;
+      }
+      #count {
+        width: 45px;
+      }
     }
   </style>
 </head>
@@ -192,8 +237,7 @@
       if (parseInt(countInput.value) > 1000) {
         countInput.value = 1000;
       }
-      countInput.style.width = '40px';
-      const newWidth = countInput.value.length * 10 + 20;
+      const newWidth = Math.min(countInput.value.length * 10 + 20, 100);
       countInput.style.width = newWidth + 'px';
     });
 
@@ -221,7 +265,7 @@
         generatedSeeds.push(randomBedrockSeed());
       }
 
-      let output = "Here are your seeds:\n\n";
+      let output = "Seed/s Generated:\n\n";
       generatedSeeds.forEach((seed, i) => {
         output += `Seed #${i + 1}: ${seed}\n`;
       });
@@ -244,10 +288,9 @@
       const blob = new Blob([textContent], { type: "text/plain" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "minecraft_bedrock_seeds.txt";
+      link.download = "minecraft_bedrock_seed_results.txt";
       link.click();
     }
   </script>
 </body>
 </html>
-
