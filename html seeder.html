@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft Bedrock Seed Generator</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #00ff00;
+      font-family: Consolas, "Courier New", monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    #terminal {
+      background-color: #000;
+      border: 2px solid #00ff00;
+      padding: 20px;
+      width: 700px;
+      box-shadow: 0 0 15px #00ff00;
+      text-align: center;
+      white-space: pre-line;
+    }
+
+    input, button {
+      background: #000;
+      color: #00ff00;
+      border: none;
+      font-family: inherit;
+      font-size: 1em;
+      outline: none;
+      text-align: center;
+    }
+
+    #count {
+      width: 40px;
+      min-width: 40px;
+      border: 1px solid #00ff00;
+      box-shadow: 0 0 8px #00ff00 inset, 0 0 5px #00ff00;
+      border-radius: 0;
+      padding: 2px 4px;
+      transition: width 0.1s ease, box-shadow 0.2s;
+      margin-top: 5px;
+    }
+
+    #count:focus {
+      box-shadow: 0 0 12px #00ff00, inset 0 0 8px #00ff00;
+    }
+
+    /* Remove spinner arrows from number input (cross-browser) */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid #00ff00;
+      padding: 3px 12px;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 5px #00ff00;
+      display: block;
+      margin: 10px auto 0 auto;
+    }
+
+    button:hover {
+      background: #00ff00;
+      color: #000;
+      box-shadow: 0 0 10px #00ff00;
+    }
+
+    #outputBox {
+      border: 1px solid #00ff00;
+      padding: 10px;
+      margin-top: 0px;
+      text-align: left;
+      height: 250px;
+      overflow-y: auto;
+      white-space: pre;
+      background-color: #000;
+      box-shadow: inset 0 0 10px #00ff00;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      scrollbar-width: thin;
+      scrollbar-color: #00ff00 #000;
+    }
+
+    /* Scrollbar aesthetics (Chrome, Edge, Safari) */
+    #outputBox::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    #outputBox::-webkit-scrollbar-track {
+      background: #000;
+      box-shadow: inset 0 0 5px #00ff00;
+    }
+
+    #outputBox::-webkit-scrollbar-thumb {
+      background: #00ff00;
+      border-radius: 2px;
+      box-shadow: 0 0 10px #00ff00;
+      transition: all 0.2s ease;
+    }
+
+    #outputBox::-webkit-scrollbar-thumb:hover {
+      background: #00ff88;
+      box-shadow: 0 0 15px #00ff88;
+    }
+
+    #credit {
+      color: #00ff00;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+      text-align: left;
+      width: 100%;
+    }
+
+    #error {
+      color: #ff3333;
+      font-weight: bold;
+      margin-top: 5px;
+      display: none;
+      text-shadow: 0 0 8px #ff0000;
+    }
+
+    #seedContainer {
+      margin: 0;
+      padding: 0;
+      text-align: left;
+      white-space: pre-wrap;
+    }
+
+    .spinner {
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .spinner::after {
+      content: "|";
+      animation: spinContent 0.4s steps(4) infinite;
+    }
+
+    @keyframes spinContent {
+      0% { content: "|"; }
+      25% { content: "/"; }
+      50% { content: "-"; }
+      75% { content: "\\"; }
+      100% { content: "|"; }
+    }
+
+    h1, p {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal">
+    ==&gt; Minecraft Bedrock Seed Generator &lt;===<br><br>
+    How many seeds would you like to generate? (1–1000, default is 5): 
+    <br>
+    <input type="number" id="count" min="1" max="1000" placeholder="5">
+    <button onclick="generateSeeds()">Enter</button>
+    <div id="error">Error: Cannot generate 0 or negative seeds!</div>
+    <button id="exportBtn" style="display:none;" onclick="exportSeeds()">Export as .txt</button>
+
+    <div id="outputBox">
+      <div id="credit">© 2025 Mendukusai - Minecraft Bedrock Seed Generator v1.0</div>
+      <div id="seedContainer"><span class="spinner"></span>Awaiting input...</div>
+    </div>
+  </div>
+
+  <script>
+    const countInput = document.getElementById('count');
+    const container = document.getElementById('seedContainer');
+    const exportBtn = document.getElementById('exportBtn');
+    const errorLine = document.getElementById('error');
+    let generatedSeeds = [];
+    const creditText = "\n\n© 2025 Mendukusai - Minecraft Bedrock Seed Generator v1.0";
+
+    countInput.addEventListener('input', () => {
+      if (parseInt(countInput.value) > 1000) {
+        countInput.value = 1000;
+      }
+      countInput.style.width = '40px';
+      const newWidth = countInput.value.length * 10 + 20;
+      countInput.style.width = newWidth + 'px';
+    });
+
+    function randomBedrockSeed() {
+      return Math.floor(Math.random() * (2 ** 32)) - 2 ** 31;
+    }
+
+    function generateSeeds() {
+      let count = parseInt(countInput.value);
+
+      if (count === 0 || count < 0) {
+        errorLine.style.display = "block";
+        container.innerText = ":< No seeds generated. Enter a number greater than 0.";
+        exportBtn.style.display = "none";
+        return;
+      } else {
+        errorLine.style.display = "none";
+      }
+
+      if (isNaN(count) || count <= 0) count = 5;
+      if (count > 1000) count = 1000;
+
+      generatedSeeds = [];
+      for (let i = 0; i < count; i++) {
+        generatedSeeds.push(randomBedrockSeed());
+      }
+
+      let output = "Here are your seeds:\n\n";
+      generatedSeeds.forEach((seed, i) => {
+        output += `Seed #${i + 1}: ${seed}\n`;
+      });
+
+      container.innerText = output;
+      exportBtn.style.display = "block";
+    }
+
+    function exportSeeds() {
+      if (generatedSeeds.length === 0) {
+        alert("No seeds to export. Generate seeds first!");
+        return;
+      }
+
+      const textContent =
+        "Seed generated:\n\n" + 
+        generatedSeeds.map((seed, i) => `Seed #${i + 1}: ${seed}`).join("\n") +
+        creditText;
+
+      const blob = new Blob([textContent], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "minecraft_bedrock_seeds.txt";
+      link.click();
+    }
+  </script>
+</body>
+</html>
